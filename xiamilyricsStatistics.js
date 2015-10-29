@@ -3,7 +3,7 @@
 // @description    A brief description of your script
 // @author         Your Name
 // @include        http://www.xiami.com/*
-// @version        1.8
+// @version        1.8.2
 // ==/UserScript==
 
 (function(E,B){function ka(a,b,d){if(d===B&&a.nodeType===1){d=a.getAttribute("data-"+b);if(typeof d==="string"){try{d=d==="true"?true:d==="false"?false:d==="null"?null:!c.isNaN(d)?parseFloat(d):Ja.test(d)?c.parseJSON(d):d}catch(e){}c.data(a,b,d)}else d=B}return d}function U(){return false}function ca(){return true}function la(a,b,d){d[0].type=a;return c.event.handle.apply(b,d)}function Ka(a){var b,d,e,f,h,l,k,o,x,r,A,C=[];f=[];h=c.data(this,this.nodeType?"events":"__events__");if(typeof h==="function")h=
@@ -183,13 +183,17 @@ function xhr(u,m,a,d,c) {
 	return S_Result;
 }
 
-function xhr_post (url, id, xmtoken) {
+function xhr_post (url, index, id, xmtoken) {
 	xhr_p = new XMLHttpRequest;
 	xhr_p.open("POST", url, true);
 	var boundary = '----WebKitFormBoundary';
 	boundary += Math.floor(Math.random()*32768);
 	boundary += Math.floor(Math.random()*32768);
 	boundary += Math.floor(Math.random()*32768);
+	
+	var _lyricist = result_obj.lyricist[index];
+	var _composer = result_obj.composer[index];
+	var _arrangement = result_obj.arranger[index];
 	xhr_p.setRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary);
 	var body = '';
 	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
@@ -211,6 +215,21 @@ function xhr_post (url, id, xmtoken) {
 	body += "lrc";
 	body += '"\r\n\r\n';
 	body += '';
+	body += '\r\n';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "songwriters";
+	body += '"\r\n\r\n';
+	body += _lyricist;
+	body += '\r\n';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "composer";
+	body += '"\r\n\r\n';
+	body += _composer;
+	body += '\r\n';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "arrangement";
+	body += '"\r\n\r\n';
+	body += _arrangement;
 	body += '\r\n';
 	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
 	body += "submit";
@@ -307,39 +326,7 @@ function addlyriccount() {
 				if(j)
 					ids.push(j);
 			}
-			//alert(ids);
-			var result = '';
-			var result_obj = {};
-			result_obj.lrcs = 0;
-			result_obj.txts = 0;
-			result_obj.instru = {};
-			result_obj.instru.num = 0;
-			result_obj.instru.track = [];
-			result_obj.instru.id = [];
-			result_obj.forceinst = {};
-			result_obj.forceinst.num = 0;
-			result_obj.forceinst.track = [];
-			result_obj.nolrc = {};
-			result_obj.nolrc.num = 0;
-			result_obj.nolrc.track = [];
-			result_obj.notxt = {};
-			result_obj.notxt.num = 0;
-			result_obj.notxt.track = [];
-			result_obj.noinfo = {};
-			result_obj.noinfo.num = 0;
-			result_obj.noinfo.track = [];
-			result_obj.noarrinfo = {};
-			result_obj.noarrinfo.num = 0;
-			result_obj.noarrinfo.track = [];
-			
-			//result_obj.info = [];
-			result_obj.allusers = [];
-			
-			var hastxt_ids = [];
-			var haslrc_ids = [];
-			var fucktxt_ids = [];
-			var fucklrc_ids = [];
-			var emptylrc_ids = [];
+			//alert(ids);		
 			
 			getuploader(ids,0);
 		}	
@@ -353,54 +340,17 @@ function addlyriccount() {
 					var lyricist = composer = arranger = "";
 					//alert(info.length);
 					for (var i=2; i<info.length;i++) {
-						if ($(info[i]).find("td").eq(0).text() == "作词：")
-							lyricist = $(info[i]).find("td").eq(1).text();
-						else if ($(info[i]).find("td").eq(0).text() == "作曲：")
-							composer = $(info[i]).find("td").eq(1).text();
-						else if ($(info[i]).find("td").eq(0).text() == "编曲：")	
-							arranger = $(info[i]).find("td").eq(1).text();
-					}
-					
-					/*
-					alert (lyricist + composer + arranger);
-					if (lyricist != "") {
-						if (result_obj.info[lyricist]) 
-							result_obj[uid].lyricist_track.push(pos+1);						
-						else {
-							result_obj.info.push(lyricist);
-							result_obj[lyricist] = {};
-							result_obj[lyricist].lyricist_track = [pos+1];
-							result_obj[lyricist].composer_track = [];
-							result_obj[lyricist].arranger_track = [];
+						if ($(info[i]).find("td").eq(0).text() == "作词：") {
+							lyricist = $(info[i]).find("td").eq(1).text();							
+						} else if ($(info[i]).find("td").eq(0).text() == "作曲：") {
+							composer = $(info[i]).find("td").eq(1).text();							
+						} else if ($(info[i]).find("td").eq(0).text() == "编曲：") {
+							arranger = $(info[i]).find("td").eq(1).text();							
 						}
 					}
-					
-					if (composer != "") {
-						if (result_obj.info[composer]) 
-							result_obj[uid].composer_track.push(pos+1);						
-						else {
-							result_obj.info.push(composer);
-							result_obj[composer] = {};
-							result_obj[composer].lyricist_track = [];
-							result_obj[composer].composer_track = [pos+1];
-							result_obj[composer].arranger_track = [];
-						}
-					}
-					
-					if (arranger != "") {
-						if (result_obj.info[arranger]) 
-							result_obj[uid].arranger_track.push(pos+1);						
-						else {
-							result_obj.info.push(arranger);
-							result_obj[arranger] = {};
-							result_obj[arranger].lyricist_track = [];
-							result_obj[arranger].composer_track = [];
-							result_obj[arranger].arranger_track = [pos+1];
-						}
-					}
-					
-					*/
-						
+					result_obj.lyricist.push(lyricist);
+					result_obj.composer.push(composer);
+					result_obj.arranger.push(arranger);					
 					
 					info = lyrics.text();
 					//alert(info);
@@ -456,15 +406,18 @@ function addlyriccount() {
 						var i = 0;
 						if (txt == 1) {
 							result_obj.txts++;
-							hastxt_ids.push(ids[pos]);												
+							hastxt.ids.push(ids[pos]);
+							hastxt.pos.push(pos);								
 							uid = $(lyrics).eq(i).find('a').attr('href').split('u/')[1];
 							console.log(uid);
 						} 
 						else if (txt == 2) {
 							result_obj.txts++;
-							hastxt_ids.push(ids[pos]);
+							hastxt.ids.push(ids[pos]);
+							hastxt.pos.push(pos);
 							uid = 0;
-							fucktxt_ids.push(ids[pos]);
+							fucktxt.ids.push(ids[pos]);
+							fucktxt.pos.push(pos);
 						}					
 						// 处理uid
 						if (result_obj[uid]) {
@@ -489,16 +442,21 @@ function addlyriccount() {
 						var i = (txt == 1)?1:0;
 						if (lrc == 1) {
 							result_obj.lrcs++;
-							haslrc_ids.push(ids[pos]);
+							haslrc.ids.push(ids[pos]);
+							haslrc.pos.push(pos);
 							uid = $(lyrics).eq(i).find('a').attr('href').split('u/')[1];
-							if (uid == 55)
-								fucklrc_ids.push(ids[pos]);
+							if (uid == 55) {
+								fucklrc.ids.push(ids[pos]);
+								fucklrc.pos.push(pos);
+							}
 						}
 						else if (lrc == 2) {
 							result_obj.lrcs++;
-							haslrc_ids.push(ids[pos]);	
+							haslrc.ids.push(ids[pos]);	
+							haslrc.pos.push(pos);
 							uid = 0;
-							fucklrc_ids.push(ids[pos]);					
+							fucklrc.ids.push(ids[pos]);
+							fucklrc.pos.push(pos);							
 						}
 						// 处理uid
 						if (result_obj[uid]) {
@@ -637,12 +595,14 @@ function addlyriccount() {
 		$('#empty_lrc').live('click',function(){
 			if (confirm("即将清空所有歌词!")) {
 				var token = getToken();
-				//alert(haslrc_ids);
+				//alert(haslrc.ids);
 				var i;
-				for (i = 0; i < haslrc_ids.length; i++)
-					xhr_post('http://www.xiami.com/wiki/addlrc/id/' + haslrc_ids[i], haslrc_ids[i], token);
-				for (i = 0; i < hastxt_ids.length; i++)
-					xhr_post('http://www.xiami.com/wiki/addlyric/id/' + hastxt_ids[i], hastxt_ids[i], token);
+				for (i = 0; i < haslrc.ids.length; i++) {				
+					xhr_post('http://www.xiami.com/wiki/addlrc/id/' + haslrc.ids[i], haslrc.pos[i], haslrc.ids[i], token);
+					}
+				for (i = 0; i < hastxt.ids.length; i++) {
+					xhr_post('http://www.xiami.com/wiki/addlyric/id/' + hastxt.ids[i], hastxt.pos[i], hastxt.ids[i], token);
+					}
 				alert("done!");
 			}
 		});
@@ -650,10 +610,14 @@ function addlyriccount() {
 			if (confirm("即将清空所有官方导入歌词!")) {
 				var token = getToken();
 				var i;
-				for (i = 0; i < fucklrc_ids.length; i++)
-					xhr_post('http://www.xiami.com/wiki/addlrc/id/' + fucklrc_ids[i], fucklrc_ids[i], token);
-				for (i = 0; i < fucktxt_ids.length; i++)
-					xhr_post('http://www.xiami.com/wiki/addlyric/id/' + fucktxt_ids[i], fucktxt_ids[i], token);
+				for (i = 0; i < fucklrc.ids.length; i++) {
+					xhr_post('http://www.xiami.com/wiki/addlrc/id/' + fucklrc.ids[i], fucklrc.pos[i], fucklrc.ids[i], token);
+					
+					}
+				for (i = 0; i < fucktxt.ids.length; i++) {
+					xhr_post('http://www.xiami.com/wiki/addlyric/id/' + fucktxt.ids[i], fucktxt.pos[i], fucktxt.ids[i], token);
+					
+					}
 				alert("done!");
 			}
 		});
@@ -769,8 +733,54 @@ function testremoved(){
 }
 if (/xiami.com\/album\/|xiami.com\/collect\//.test(window.location.href)) {
 	var data = "";
+	
+	var result = '';
+	var result_obj = {};
+	result_obj.lrcs = 0;
+	result_obj.txts = 0;
+	result_obj.instru = {};
+	result_obj.instru.num = 0;
+	result_obj.instru.track = [];
+	result_obj.instru.id = [];
+	result_obj.forceinst = {};
+	result_obj.forceinst.num = 0;
+	result_obj.forceinst.track = [];
+	result_obj.nolrc = {};
+	result_obj.nolrc.num = 0;
+	result_obj.nolrc.track = [];
+	result_obj.notxt = {};
+	result_obj.notxt.num = 0;
+	result_obj.notxt.track = [];
+	result_obj.noinfo = {};
+	result_obj.noinfo.num = 0;
+	result_obj.noinfo.track = [];
+	result_obj.noarrinfo = {};
+	result_obj.noarrinfo.num = 0;
+	result_obj.noarrinfo.track = [];
+	result_obj.lyricist = [];
+	result_obj.composer = [];
+	result_obj.arranger = [];
+	
+	//result_obj.info = [];
+	result_obj.allusers = [];
+	
+	var hastxt = {};
+	hastxt.ids = [];
+	hastxt.pos = [];
+	var haslrc = {};
+	haslrc.ids = [];
+	haslrc.pos = [];	
+	var fucktxt = {};
+	fucktxt.ids = [];
+	fucktxt.pos = [];
+	var fucklrc = {};
+	fucklrc.ids = [];
+	fucklrc.pos = [];
+	var emptylrc_ids = [];
+	
 	addlyriccount();
 	testremoved();
+	
 } else if (/xiami.com\/g\/lyrics|xiami.com\/group\/thread\/id\/13001/.test(window.location.href)) {
 	var data = "";
 	addpostcount();
