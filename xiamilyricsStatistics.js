@@ -3,7 +3,7 @@
 // @description    A brief description of your script
 // @author         Your Name
 // @include        http://www.xiami.com/*
-// @version        1.7
+// @version        1.8
 // ==/UserScript==
 
 (function(E,B){function ka(a,b,d){if(d===B&&a.nodeType===1){d=a.getAttribute("data-"+b);if(typeof d==="string"){try{d=d==="true"?true:d==="false"?false:d==="null"?null:!c.isNaN(d)?parseFloat(d):Ja.test(d)?c.parseJSON(d):d}catch(e){}c.data(a,b,d)}else d=B}return d}function U(){return false}function ca(){return true}function la(a,b,d){d[0].type=a;return c.event.handle.apply(b,d)}function Ka(a){var b,d,e,f,h,l,k,o,x,r,A,C=[];f=[];h=c.data(this,this.nodeType?"events":"__events__");if(typeof h==="function")h=
@@ -491,6 +491,8 @@ function addlyriccount() {
 							result_obj.lrcs++;
 							haslrc_ids.push(ids[pos]);
 							uid = $(lyrics).eq(i).find('a').attr('href').split('u/')[1];
+							if (uid == 55)
+								fucklrc_ids.push(ids[pos]);
 						}
 						else if (lrc == 2) {
 							result_obj.lrcs++;
@@ -505,7 +507,7 @@ function addlyriccount() {
 						} else {
 							result_obj.allusers.push(uid);
 							result_obj[uid] = {};
-							if (uid == 0)
+							if (uid == 0 || uid == 55)
 								result_obj[uid].name = "该死的官方导入";
 							else
 								result_obj[uid].name = $(lyrics).eq(i).find('a').text();
