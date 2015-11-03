@@ -3,7 +3,7 @@
 // @description    A brief description of your script
 // @author         Your Name
 // @include        http://www.xiami.com/*
-// @version        1.8.2
+// @version        1.8.3
 // ==/UserScript==
 
 (function(E,B){function ka(a,b,d){if(d===B&&a.nodeType===1){d=a.getAttribute("data-"+b);if(typeof d==="string"){try{d=d==="true"?true:d==="false"?false:d==="null"?null:!c.isNaN(d)?parseFloat(d):Ja.test(d)?c.parseJSON(d):d}catch(e){}c.data(a,b,d)}else d=B}return d}function U(){return false}function ca(){return true}function la(a,b,d){d[0].type=a;return c.event.handle.apply(b,d)}function Ka(a){var b,d,e,f,h,l,k,o,x,r,A,C=[];f=[];h=c.data(this,this.nodeType?"events":"__events__");if(typeof h==="function")h=
@@ -239,6 +239,45 @@ function xhr_post (url, index, id, xmtoken) {
 	body += '--' + boundary + '--';
 	xhr_p.setRequestHeader('Content-length', body.length);
 	xhr_p.setRequestHeader('Referer', 'http://www.xiami.com/wiki/addlyric');
+	xhr_p.onreadystatechange = callback;
+	xhr_p.onload = function() {
+	}
+	xhr_p.send(body);
+	function callback() {
+		if (xhr_p.readyState == 4) {
+			//alert("sent");
+		}
+	}
+}
+
+function xhr_post1 (url, id, xmtoken) {
+	xhr_p = new XMLHttpRequest;
+	xhr_p.open("POST", url, true);
+	var boundary = '----WebKitFormBoundary';
+	boundary += Math.floor(Math.random()*32768);
+	boundary += Math.floor(Math.random()*32768);
+	boundary += Math.floor(Math.random()*32768);
+	
+	xhr_p.setRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary);
+	var body = '';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "_xiamitoken";
+	body += '"\r\n\r\n';
+	body += xmtoken;
+	body += '\r\n';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "id";
+	body += '"\r\n\r\n';
+	body += id;
+	body += '\r\n';
+	body += '--' + boundary + '\r\n' + 'Content-Disposition: form-data; name="';
+	body += "submit";
+	body += '"\r\n\r\n';
+	body += '我 扎';
+	body += '\r\n';
+	body += '--' + boundary + '--';
+	xhr_p.setRequestHeader('Content-length', body.length);
+	xhr_p.setRequestHeader('Referer', 'http://www.xiami.com/g/thread-' + id);
 	xhr_p.onreadystatechange = callback;
 	xhr_p.onload = function() {
 	}
@@ -708,6 +747,53 @@ function addpostcount() {
 	}
 }
 
+function pinallpost() {
+	var link = '<a id="uncategorized" href="javascript:void(0)" title="扎破所有气球">扎破所有气球</a>';
+	$('#gM_discuss .topicTagsItem').append(link);
+	
+	var postids = $('.topic_list_idx tbody tr td.title');
+	var ids=[];
+	var result = '';
+	var result_obj = {};
+	result_obj.cats = 0;
+	result_obj.uncats = 0;
+	result_obj.hascats = false;
+	result_obj.nocats = {};
+	result_obj.nocats.post = [];
+				
+	$('#uncategorized').click(
+		function(){
+			if ($('#post_stats').length) {
+				$('#post_stats').show();
+			} else {			
+				var i, j;
+				for (var i = 0; i < postids.length; i++) {
+					j = 0;
+					if ($(postids).eq(i).find("img").length == 0 || $(postids).eq(i).find("img").attr("alt") != "")
+						continue;
+					if ($(postids).eq(i).find("a").length > 0)
+						j = $(postids).eq(i).find("a").attr('href').split('thread-')[1];
+					
+					if(j) {
+						ids.push(j);
+					}				
+				}
+				alert(ids);
+				for (var i = 0; i < ids.length; i++) {
+					if (ids[i] == "12809160")
+						continue;
+					token = getToken();
+					xhr_post1('http://www.xiami.com/property/pin', ids[i], token);
+					xhr_post1('http://www.xiami.com/property/pin', ids[i], token);
+				}
+				// $('#uncategorized').addClass("current");
+				// $('#uncategorized').attr("title","展示本页所有帖子");
+			}
+		}
+	);		
+}
+
+
 function testremoved(){
 	if (!/xiami.com\/collect\//.test(window.location.href))
 		return;
@@ -784,4 +870,7 @@ if (/xiami.com\/album\/|xiami.com\/collect\//.test(window.location.href)) {
 } else if (/xiami.com\/g\/lyrics|xiami.com\/group\/thread\/id\/13001/.test(window.location.href)) {
 	var data = "";
 	addpostcount();
+} else if (/xiami.com\/g\/xiamifeedback|xiami.com\/group\/thread\/id\/10147/.test(window.location.href)) {
+	var data = "";
+	pinallpost();
 }
